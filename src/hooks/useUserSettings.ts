@@ -49,19 +49,19 @@ export function useUserSettings() {
       setLoading(true);
       setError(null);
 
-      // Check if settings exist for this user
       const { data, error: fetchError } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
-        // If no settings found, create default settings
-        if (fetchError.code === 'PGRST116') {
-          return createDefaultSettings();
-        }
         throw fetchError;
+      }
+
+      // If no settings found, create default settings
+      if (!data) {
+        return createDefaultSettings();
       }
 
       setSettings(data);
@@ -93,14 +93,14 @@ export function useUserSettings() {
         animations_enabled: true,
       };
 
-      const { data, error: createError } = await supabase
+      const { data, error: upsertError } = await supabase
         .from('user_settings')
-        .insert([defaultSettings])
+        .upsert([defaultSettings], { onConflict: 'user_id' })
         .select()
         .single();
 
-      if (createError) {
-        throw createError;
+      if (upsertError) {
+        throw upsertError;
       }
 
       setSettings(data);
