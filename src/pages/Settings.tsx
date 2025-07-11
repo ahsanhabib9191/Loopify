@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -22,30 +22,31 @@ import {
   Instagram 
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useUserSettings, UpdateUserSettingsData } from '../hooks/useUserSettings';
 
 type SettingsTab = 'profile' | 'notifications' | 'appearance' | 'integrations' | 'security';
 
 export function Settings() {
   const { user, signOut } = useAuth();
+  const { settings, loading, error, isSaving, updateSettings } = useUserSettings();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
-  const [isSaving, setIsSaving] = useState(false);
   
   // Profile settings
-  const [displayName, setDisplayName] = useState(user?.email?.split('@')[0] || '');
-  const [bio, setBio] = useState('AI content creator and entrepreneur');
+  const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
   const [timezone, setTimezone] = useState('America/New_York');
   
   // Notification settings
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [contentReminders, setContentReminders] = useState(true);
-  const [goalReminders, setGoalReminders] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(true);
-  const [systemUpdates, setSystemUpdates] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [contentReminders, setContentReminders] = useState(false);
+  const [goalReminders, setGoalReminders] = useState(false);
+  const [weeklyReports, setWeeklyReports] = useState(false);
+  const [systemUpdates, setSystemUpdates] = useState(false);
   
   // Appearance settings
   const [theme, setTheme] = useState('dark');
-  const [compactMode, setCompactMode] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+  const [compactMode, setCompactMode] = useState(false); 
+  const [animationsEnabled, setAnimationsEnabled] = useState(false);
   
   // Integration settings
   const [youtubeConnected, setYoutubeConnected] = useState(false);
@@ -56,14 +57,56 @@ export function Settings() {
   // Security settings
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   
-  const handleSaveSettings = () => {
-    setIsSaving(true);
+  // Update local state when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      setDisplayName(settings.display_name || '');
+      setBio(settings.bio || '');
+      setTimezone(settings.timezone);
+      setEmailNotifications(settings.email_notifications);
+      setContentReminders(settings.content_reminders);
+      setGoalReminders(settings.goal_reminders);
+      setWeeklyReports(settings.weekly_reports);
+      setSystemUpdates(settings.system_updates);
+      setTheme(settings.theme);
+      setCompactMode(settings.compact_mode);
+      setAnimationsEnabled(settings.animations_enabled);
+    }
+  }, [settings]);
+  
+  // Save profile settings
+  const handleSaveProfileSettings = async () => {
+    const updates: UpdateUserSettingsData = {
+      display_name: displayName,
+      bio,
+      timezone,
+    };
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      // Show success message (could use a toast notification here)
-    }, 1000);
+    await updateSettings(updates);
+  };
+  
+  // Save notification settings
+  const handleSaveNotificationSettings = async () => {
+    const updates: UpdateUserSettingsData = {
+      email_notifications: emailNotifications,
+      content_reminders: contentReminders,
+      goal_reminders: goalReminders,
+      weekly_reports: weeklyReports,
+      system_updates: systemUpdates,
+    };
+    
+    await updateSettings(updates);
+  };
+  
+  // Save appearance settings
+  const handleSaveAppearanceSettings = async () => {
+    const updates: UpdateUserSettingsData = {
+      theme: theme as 'dark' | 'light',
+      compact_mode: compactMode,
+      animations_enabled: animationsEnabled,
+    };
+    
+    await updateSettings(updates);
   };
   
   const handleConnectService = (service: string) => {
@@ -93,6 +136,31 @@ export function Settings() {
     { id: 'integrations' as SettingsTab, label: 'Integrations', icon: Link },
     { id: 'security' as SettingsTab, label: 'Security', icon: Shield },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading your settings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-400 text-2xl">⚠️</span>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Failed to Load Settings</h3>
+          <p className="text-gray-400 mb-4">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -210,7 +278,7 @@ export function Settings() {
               
               <div className="pt-4 flex justify-end">
                 <button
-                  onClick={handleSaveSettings}
+                  onClick={handleSaveProfileSettings}
                   disabled={isSaving}
                   className="btn-primary flex items-center space-x-2"
                 >
@@ -322,7 +390,7 @@ export function Settings() {
               
               <div className="pt-4 flex justify-end">
                 <button
-                  onClick={handleSaveSettings}
+                  onClick={handleSaveNotificationSettings}
                   disabled={isSaving}
                   className="btn-primary flex items-center space-x-2"
                 >
@@ -421,7 +489,7 @@ export function Settings() {
               
               <div className="pt-4 flex justify-end">
                 <button
-                  onClick={handleSaveSettings}
+                  onClick={handleSaveAppearanceSettings}
                   disabled={isSaving}
                   className="btn-primary flex items-center space-x-2"
                 >
