@@ -148,9 +148,12 @@ export function useUserSettings() {
 
   // Apply theme from settings
   const applyTheme = (theme: 'dark' | 'light') => {
-    // This would apply theme changes to the document
-    // For now, we're just using dark theme
-    console.log(`Applying ${theme} theme`);
+    // Apply theme to document
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-theme');
+    } else {
+      document.documentElement.classList.remove('light-theme');
+    }
   };
 
   // Set up initial fetch and real-time subscription

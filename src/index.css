@@ -2,13 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme variables */
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: rgba(31, 41, 55, 0.5);
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --border-color: rgba(75, 85, 99, 0.3);
+}
+
+/* Light theme overrides */
+.light-theme {
+  --bg-primary: #f9fafb;
+  --bg-secondary: rgba(243, 244, 246, 0.7);
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: rgba(209, 213, 219, 0.5);
+}
+
 @layer base {
   * {
     font-family: 'Space Grotesk', system-ui, sans-serif;
   }
   
   body {
-    @apply bg-gray-950 text-white overflow-x-hidden;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    @apply overflow-x-hidden;
   }
   
   /* Custom scrollbar */
@@ -53,7 +73,9 @@
 
 @layer components {
   .glass-card {
-    @apply bg-gray-900/50 backdrop-blur-sm border border-gray-800/30 rounded-2xl;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    @apply backdrop-blur-sm rounded-2xl;
   }
   
   .gradient-border {
@@ -84,7 +106,7 @@
 /* Animated background */
 .animated-bg {
   position: relative;
-  background: #0a0a0a;
+  background: var(--bg-primary);
 }
 
 .animated-bg::before {
