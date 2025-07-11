@@ -201,29 +201,12 @@ export function LatestAINews({ onBack }: LatestAINewsProps) {
     setError('');
 
     try {
-      // Send request to webhook for latest AI news
-      const webhookResponse = await fetch('https://hook.us1.make.com/ai-news-webhook-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          category: selectedCategory,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-
-      if (!webhookResponse.ok) {
-        throw new Error(`Failed to fetch news: ${webhookResponse.status}`);
-      }
-
       // Refresh local data
       await refetch();
 
     } catch (err) {
       console.error('Failed to refresh news:', err);
-      setError('Failed to refresh news. Please try again.');
+      setError('Unable to refresh news at this time. Showing existing data.');
     } finally {
       setIsRefreshing(false);
     }
